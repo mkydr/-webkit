@@ -1,27 +1,4 @@
 services:
-  strapi:
-    container_name: strapi
-    build:
-      context: CMS
-      dockerfile: ../deployment/strapi/Dockerfile.develop
-    image: strapi:latest
-    restart: unless-stopped
-    env_file: CMS/.env
-    volumes:
-      - ./CMS/config:/opt/app/config
-      - ./CMS/src:/opt/app/src
-      - ./CMS/package.json:/opt/package.json
-      - ./CMS/yarn.lock:/opt/yarn.lock
-     # - ./CMS/.env:/opt/app/.env
-      - ./CMS/public/uploads:/opt/app/public/uploads
-    ports:
-      - "1337:1337"
-    depends_on:
-      - strapiDB
-    profiles:
-      - dev
-
-
   strapi-prod:
     container_name: strapi
     build:
@@ -41,9 +18,6 @@ services:
       - "1337:1337"
     depends_on:
       - strapiDB
-    profiles:
-      - prod
-
 
   strapiDB:
     container_name: strapiDB
@@ -55,9 +29,20 @@ services:
       - strapi-data:/var/lib/postgresql/data/ #using a volume
     ports:
       - "5432:5432"
-    profiles:
-      - dev
-      - prod
+
+  ui:
+    container_name: strapi-ui
+    platform: linux/amd64
+    restart: unless-stopped
+    #image: strapi-ui:latest
+    build:
+      context: UI
+      dockerfile: ../deployment/ui/Dockerfile
+    volumes:
+      #- UI/dist/ui:/usr/share/nginx/html
+      - ./deployment/ui/conf.d:/etc/nginx/conf.d/
+    ports:
+      - "80:80"
 
 volumes:
   strapi-data:
